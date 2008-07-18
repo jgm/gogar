@@ -175,18 +175,24 @@ class Game
     @transcript = []
   end
 
-  def agent_named name
+  def agent_named(name)
     agents.select { |ag| ag.name.downcase == name.downcase }[0]
   end
 
-  def assertions_challenged agent
+  def assertions_challenged(agent)
     challenged_sentences = EqSet.new []
     agents.each { |a| challenged_sentences.merge a.challenges_issued.select {|c| c.target == agent}.map { |c| c.sentence }}
     challenged_sentences
   end    
   
-  def assertions_unchallenged agent
+  def assertions_unchallenged(agent)
     agent.commitments_avowed - assertions_challenged(agent)
+  end
+
+  def all_unchallenged_assertions
+    all = EqSet.new []
+    self.agents.each{|a| all = all | assertions_unchallenged(a)}
+    all
   end
 
   def consequences_once(infs, basis) 
@@ -247,15 +253,19 @@ class Game
     times = other.intelligence
     # start with default entitlement to anything anyone has asserted, unless
     # it has been challenged or is incompatible with other's commitments
-    base = remove_incompatibles(self.assertions_unchallenged(other), coms, incs)
-    # close under committive inferences, which are all permissive too,
-    # removing incompatibles after each iteration
-    closed_under_committive = fixed_point(base, times) {|s| consequences_once_and_prune(scorekeeper.committive_inferences, s, coms, incs) }
-    # close under permissive inferences from entitled commitments only
-    closed_under_permissive = fixed_point(closed_under_committive, times) {|s| consequences_once_and_prune(scorekeeper.permissive_inferences, (s & coms), coms, incs) }
-    closed_under_committive | closed_under_permissive
+    base = remove_incompatibles(self.all_unchallenged_assertions, coms, incs)
+    fixed_point(base, times) {|s| expand_entitlements(coms, s, incs, scorekeeper.committive_inferences, scorekeeper.permissive_inferences, times)}
   end
-  
+
+  def expand_entitlements(coms, ents, incs, cominfs, perminfs, times)
+    # apply committive inferences, which are all permissive too,
+    # removing incompatibles afterward
+    ents2 = consequences_once_and_prune(cominfs, ents, coms, incs)
+    # close under permissive inferences from entitled commitments only
+    ents3 = consequences_once_and_prune(perminfs, (ents & coms), coms, incs)
+    ents2 | ents3
+  end
+
   def score(scorekeeper, other)
     # returns string with score of scorekeeper on other in game
     coms = commitments(scorekeeper, other)
