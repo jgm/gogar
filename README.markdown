@@ -17,7 +17,9 @@ entitlements is universal.
 [Try GOGAR on the web!](http://johnmacfarlane.net:9094/)
 
 The current version of GOGAR is a single Ruby script,
-[gogar.rb](master/gogar.rb). After downloading it, you can run it with
+[gogar.rb](master/gogar.rb). You can download the latest version
+[here](http://github.com/jgm/gogar/tarball/master).
+After downloading and extracting it, you can run it with
 the following command:
 
     ruby gogar.rb
