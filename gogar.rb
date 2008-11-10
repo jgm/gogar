@@ -561,7 +561,7 @@ or start a new game by typing 'new game'\n"
       res.cookies.push([Cookie.new('gogar', session.to_s)])
     end
     game = @@games[session]
-    command = req.query['command'] || "" 
+    command = req.query['command'].gsub(/</,"&lt;").gsub(/>/,"&gt;") || ""
     res['Content-Type'] = "text/html"
     res.status = 200
     answer = game.command(command)
