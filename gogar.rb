@@ -208,9 +208,8 @@ class Game
   
   def compatible_with?(incompatibilities, commitments, sentence)
     # returns true iff sentence is compatible with commitments according to incompatibilities 
-    all = commitments | EqSet.new([sentence])
-    not incompatibilities.any? {|inc| inc.subset?(all) && (not inc.subset?(all - sentence))  }  # sentence is ruled out only if it MAKES incompatibility where there wasn't any before
-  end  
+    not incompatibilities.any? {|inc| inc.subset?(commitments | EqSet.new([sentence])) && (not inc.subset?(commitments))  }  # sentence is ruled out only if it MAKES incompatibility where there wasn't any before
+  end 
   
   def remove_incompatibles(set, commitments, incompatibilities)
     # returns result of removing sentences from set that are incompatible
